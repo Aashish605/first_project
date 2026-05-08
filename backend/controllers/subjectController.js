@@ -1,0 +1,104 @@
+import sequelize from '../Db/Db.js';
+import SubjectModel from '../models/Subject.js';
+import { UniqueConstraintError } from 'sequelize';
+
+const Subject = SubjectModel(sequelize);
+
+export const addSubject = async (req, res) => {
+  try {
+    const { subject_id, name } = req.body;
+
+    if (!subject_id || !name) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    const subject = await Subject.create({
+      subject_id,
+      name,
+    });
+
+    res.status(201).json({
+      message: 'Subject added successfully',
+      data: subject,
+    });
+  } catch (error) {
+    if (error instanceof UniqueConstraintError) {
+      return res.status(409).json({ message: 'Subject with this ID already exists' });
+    }
+    res.status(500).json({ message: 'Error adding subject', error: error.message });
+  }
+};
+
+export const getSubjects = async (req, res) => {
+  try {
+    const subjects = await Subject.findAll();
+    res.status(200).json({
+      message: 'Subjects fetched successfully',
+      data: subjects,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching subjects', error: error.message });
+  }
+};
+
+export const getSubject = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const subject = await Subject.findByPk(id);
+
+    if (!subject) {
+      return res.status(404).json({ message: 'Subject not found' });
+    }
+    res.status(200).json({
+      message: 'Subject fetched successfully',
+      data: subject,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching subject', error: error.message });
+  }
+};
+
+export const updateSubjectInfo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { subject_id, name } = req.body;
+
+    if (isNaN(parseInt(id))) {
+      return res.status(400).json({ message: 'Invalid subject ID provided' });
+    }
+
+    const [updatedRows] = await Subject.update(
+      { subject_id, name },
+      { where: { id: parseInt(id) } }
+    );
+
+    if (updatedRows === 0) {
+      return res.status(404).json({ message: 'Subject not found' });
+    }
+    res.status(200).json({
+      message: 'Subject updated successfully',
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating subject', error: error.message });
+  }
+};
+
+export const removeSubject = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (isNaN(parseInt(id))) {
+      return res.status(400).json({ message: 'Invalid subject ID provided' });
+    }
+
+    const deletedRows = await Subject.destroy({ where: { id: parseInt(id) } });
+
+    if (deletedRows === 0) {
+      return res.status(404).json({ message: 'Subject not found' });
+    }
+    res.status(200).json({
+      message: 'Subject deleted successfully',
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting subject', error: error.message });
+  }
+};
