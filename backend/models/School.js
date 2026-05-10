@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 
 const SchoolModel = (sequelize) => {
-  return sequelize.define('School', {
+  const School = sequelize.define('School', {
     school_id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,

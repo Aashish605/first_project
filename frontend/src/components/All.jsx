@@ -43,7 +43,7 @@ const All = () => {
                 {data.map((item, index) => (
                     <div key={index} className="p-2 border-b">
                         {formType === 'students' && (
-                            <p>{item.first_name} {item.last_name} - Class: {item.class}, Address: {item.address} , School : {item.school.school_name}
+                            <p>{item.first_name} {item.last_name} - Class: {item.class}, Address: {item.address} , School : {item.school?.school_name ?? 'No school'}
                                 <br />
                                 {item.enrolledSubjects && item.enrolledSubjects.length > 0 && (
                                     <span>  Enrolled Subjects: {item.enrolledSubjects.map(sub => sub.subject_name).join(', ')}</span>
