@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize';
 const SubjectModel = (sequelize) => {
-  return sequelize.define('Subject', {
+  const Subject = sequelize.define('Subject', {
     subject_id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
