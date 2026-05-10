@@ -18,7 +18,7 @@ const SchoolModel = (sequelize) => {
     }
   }, {
     sequelize,
-    tableName: 'School',
+    tableName: 'school',
     timestamps: false,
     indexes: [
       {

@@ -13,7 +13,7 @@ const SubjectModel = (sequelize) => {
     }
   }, {
     sequelize,
-    tableName: 'Subject',
+    tableName: 'subject',
     timestamps: false,
     indexes: [
       {

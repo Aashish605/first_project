@@ -22,7 +22,7 @@ const TeacherModel = (sequelize) => {
     }
   }, {
     sequelize,
-    tableName: 'Teacher',
+    tableName: 'teacher',
     timestamps: false,
         indexes: [
       {

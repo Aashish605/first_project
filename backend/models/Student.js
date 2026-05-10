@@ -20,7 +20,7 @@ const StudentModel = (sequelize) => {
     }
   }, {
     sequelize,
-    tableName: 'Student',
+    tableName: 'student',
     timestamps: false,
     indexes: [
       {
