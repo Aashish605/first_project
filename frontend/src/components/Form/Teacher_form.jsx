@@ -1,7 +1,12 @@
-import React from 'react'
 import { useForm } from 'react-hook-form'
+import axios from 'axios'
+import { useEffect, useState } from 'react'
 
 const Teacher_form = () => {
+
+  const [schools, setSchools] = useState([])
+  const [subjects, setSubjects] = useState([])
+
   const {
     register,
     handleSubmit,
@@ -9,10 +14,43 @@ const Teacher_form = () => {
     reset,
   } = useForm()
 
-  const onSubmit = data => {
-    console.log('Teacher data:', data)
-    reset()
+  const onSubmit = async (data) => {
+    try {
+      console.log('Submitting form with data:', data) // Debug log
+      const response = await axios.post('http://localhost:3000/api/teachers/add', data, {
+        timeout: 5000
+      })
+      console.log('Server response:', response.data)
+      reset()
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      alert('Failed to save student information. Please try again.')
+    }
   }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [schoolsRes, subjectsRes] = await Promise.all([
+          axios.get('http://localhost:3000/api/schools/all'),
+          axios.get('http://localhost:3000/api/subjects/all')
+        ]);
+        setSchools(schoolsRes.data.data);
+        setSubjects(subjectsRes.data.data);
+        console.log('Fetched schools:', schoolsRes.data.data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
+
+
+
+
 
   return (
     <section className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
@@ -31,55 +69,62 @@ const Teacher_form = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid gap-6 sm:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-slate-700" htmlFor="teacher_id">
-                Teacher ID<span className="text-red-500">*</span>
+
+            <div className="flex flex-col">
+              <label className="block text-sm font-medium text-slate-700" htmlFor="teacher_name">
+                Teacher Name<span className="text-red-500">*</span>
               </label>
               <input
-                id="teacher_id"
+                id="teacher_name"
                 type="text"
-                {...register('teacher_id', { required: 'Teacher ID is required' })}
-                className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.teacher_id ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
-                placeholder="e.g. TEA-001"
-                aria-invalid={errors.teacher_id ? 'true' : 'false'}
+                {...register('teacher_name', { required: 'Teacher name is required' })}
+                className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.teacher_name ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
+                placeholder="e.g. John Doe"
+                aria-invalid={errors.teacher_name ? 'true' : 'false'}
               />
-              {errors.teacher_id && (
-                <p className="mt-2 text-sm text-red-600">{errors.teacher_id.message}</p>
+              {errors.teacher_name && (
+                <p className="mt-2 text-sm text-red-600">{errors.teacher_name.message}</p>
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700" htmlFor="subject_name">
+            <div className="flex flex-col">
+              <label className="block text-sm font-medium text-slate-700" htmlFor="subject_id">
                 Subject Name<span className="text-red-500">*</span>
               </label>
-              <input
-                id="subject_name"
-                type="text"
-                {...register('subject_name', { required: 'Subject name is required' })}
-                className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.subject_name ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
-                placeholder="e.g. Mathematics"
-                aria-invalid={errors.subject_name ? 'true' : 'false'}
-              />
-              {errors.subject_name && (
-                <p className="mt-2 text-sm text-red-600">{errors.subject_name.message}</p>
+              <select
+                id="subject_id"
+                {...register('subject_id', { required: 'Subject is required' })}
+                className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.subject_id ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
+                aria-invalid={errors.subject_id ? 'true' : 'false'}
+              >
+                <option value="">Select a subject</option>
+                {subjects.map((subject) => (
+                  <option key={subject.subject_id} value={subject.subject_id}>{subject.subject_name}</option>
+                ))}
+              </select>
+              {errors.subject_id && (
+                <p className="mt-2 text-sm text-red-600">{errors.subject_id.message}</p>
               )}
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700" htmlFor="school_name">
+          <div className="flex flex-col">
+            <label className="block text-sm font-medium text-slate-700" htmlFor="school_id">
               School Name<span className="text-red-500">*</span>
             </label>
-            <input
-              id="school_name"
-              type="text"
-              {...register('school_name', { required: 'School name is required' })}
-              className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.school_name ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
-              placeholder="e.g. ABC High School"
-              aria-invalid={errors.school_name ? 'true' : 'false'}
-            />
-            {errors.school_name && (
-              <p className="mt-2 text-sm text-red-600">{errors.school_name.message}</p>
+            <select
+              id="school_id"
+              {...register('school_id', { required: 'School is required' })}
+              className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.school_id ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
+              aria-invalid={errors.school_id ? 'true' : 'false'}
+            >
+              <option value="">Select a school</option>
+              {schools.map((school) => (
+                <option key={school.school_id} value={school.school_id}>{school.school_name}</option>
+              ))}
+            </select>
+            {errors.school_id && (
+              <p className="mt-2 text-sm text-red-600">{errors.school_id.message}</p>
             )}
           </div>
 

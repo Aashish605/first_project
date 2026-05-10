@@ -5,16 +5,16 @@ import { UniqueConstraintError } from 'sequelize';
 const Subject = SubjectModel(sequelize);
 
 export const addSubject = async (req, res) => {
+  console.log('Received request to add subject with data:', req.body);
   try {
-    const { subject_id, name } = req.body;
+    const {subject_name} = req.body;
 
-    if (!subject_id || !name) {
+    if (!subject_name) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
     const subject = await Subject.create({
-      subject_id,
-      name,
+      subject_name
     });
 
     res.status(201).json({
@@ -60,21 +60,17 @@ export const getSubject = async (req, res) => {
 
 export const updateSubjectInfo = async (req, res) => {
   try {
+    console.log(req.body);
     const { id } = req.params;
-    const { subject_id, name } = req.body;
+    const { subject_name } = req.body;
 
     if (isNaN(parseInt(id))) {
       return res.status(400).json({ message: 'Invalid subject ID provided' });
     }
+    const subject = await Subject.findByPk(parseInt(id));
 
-    const [updatedRows] = await Subject.update(
-      { subject_id, name },
-      { where: { id: parseInt(id) } }
-    );
-
-    if (updatedRows === 0) {
-      return res.status(404).json({ message: 'Subject not found' });
-    }
+    subject.subject_name = subject_name ;
+    await subject.save();
     res.status(200).json({
       message: 'Subject updated successfully',
     });
@@ -90,11 +86,9 @@ export const removeSubject = async (req, res) => {
       return res.status(400).json({ message: 'Invalid subject ID provided' });
     }
 
-    const deletedRows = await Subject.destroy({ where: { id: parseInt(id) } });
+    const subject = await Subject.findByPk(id);
+    await subject.destroy();
 
-    if (deletedRows === 0) {
-      return res.status(404).json({ message: 'Subject not found' });
-    }
     res.status(200).json({
       message: 'Subject deleted successfully',
     });

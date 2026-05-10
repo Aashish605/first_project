@@ -1,5 +1,5 @@
-import React from 'react'
 import { useForm } from 'react-hook-form'
+import axios from 'axios'
 
 const Subject_form = () => {
   const {
@@ -9,11 +9,18 @@ const Subject_form = () => {
     reset,
   } = useForm()
 
-  const onSubmit = data => {
-    console.log('Subject data:', data)
-    reset()
+  const onSubmit = async (data) => {
+    try {
+      const response = await axios.post('http://localhost:3000/api/subjects/add', data, {
+        timeout: 5000
+      })
+      console.log('Server response:', response.data)
+      reset()
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      alert('Failed to save student information. Please try again.')
+    }
   }
-
   return (
     <section className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50 sm:p-10">
@@ -30,37 +37,22 @@ const Subject_form = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-700" htmlFor="subject_id">
-              Subject ID<span className="text-red-500">*</span>
-            </label>
-            <input
-              id="subject_id"
-              type="text"
-              {...register('subject_id', { required: 'Subject ID is required' })}
-              className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.subject_id ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
-              placeholder="e.g. SUB-001"
-              aria-invalid={errors.subject_id ? 'true' : 'false'}
-            />
-            {errors.subject_id && (
-              <p className="mt-2 text-sm text-red-600">{errors.subject_id.message}</p>
-            )}
-          </div>
+
 
           <div>
-            <label className="block text-sm font-medium text-slate-700" htmlFor="name">
+            <label className="block text-sm font-medium text-slate-700" htmlFor="subject_name">
               Subject Name<span className="text-red-500">*</span>
             </label>
             <input
-              id="name"
+              id="subject_name"
               type="text"
-              {...register('name', { required: 'Subject name is required' })}
-              className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.name ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
+              {...register('subject_name', { required: 'Subject name is required' })}
+              className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.subject_name ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
               placeholder="e.g. Mathematics"
-              aria-invalid={errors.name ? 'true' : 'false'}
+              aria-invalid={errors.subject_name ? 'true' : 'false'}
             />
-            {errors.name && (
-              <p className="mt-2 text-sm text-red-600">{errors.name.message}</p>
+            {errors.subject_name && (
+              <p className="mt-2 text-sm text-red-600">{errors.subject_name.message}</p>
             )}
           </div>
 

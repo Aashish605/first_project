@@ -9,18 +9,17 @@ const sequelize = new Sequelize(
     {
         host: process.env.DB_HOST,
         port: process.env.DB_PORT,
-        dialect: 'mariadb',
-        logging: false,          // set true to see SQL queries in terminal
+        dialect: 'mysql', 
+        logging: false,          
         dialectOptions: {
-            timezone: 'local',
+            timezone: 'local', 
         },
     }
 );
 
-// Test connection
 try {
     await sequelize.authenticate();
-    console.log('Database connected successfully');
+    console.log('Database connected successfully using mysql2 driver');
 } catch (err) {
     console.error('Connection failed:', err.message);
     process.exit(1);

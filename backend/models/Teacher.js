@@ -1,25 +1,30 @@
 import { DataTypes } from 'sequelize';
+
 const TeacherModel = (sequelize) => {
-  return sequelize.define('Teacher', {
+  const Teacher = sequelize.define('Teacher', {
     Teacher_id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    subject_name: {
+    teacher_name: { 
       type: DataTypes.STRING(100),
       allowNull: false
     },
-    school_name: {
-      type: DataTypes.STRING(100),
+    school_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false 
+    },
+    subject_id: {
+      type: DataTypes.INTEGER,
       allowNull: false
     }
   }, {
     sequelize,
     tableName: 'Teacher',
     timestamps: false,
-    indexes: [
+        indexes: [
       {
         name: "PRIMARY",
         unique: true,
@@ -30,6 +35,8 @@ const TeacherModel = (sequelize) => {
       },
     ]
   });
+
+  return Teacher; 
 };
 
 export default TeacherModel;

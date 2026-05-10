@@ -1,7 +1,14 @@
 import { useForm } from 'react-hook-form'
 import axios from 'axios'
+import { useEffect, useState } from 'react'
+
+
 
 const Student_form = () => {
+    const [schools, setSchools] = useState([])
+    const [subjects, setSubjects] = useState([])
+
+
     const {
         register,
         handleSubmit,
@@ -10,10 +17,9 @@ const Student_form = () => {
     } = useForm()
 
     const onSubmit = async (data) => {
-        console.log('Sending data to server:', data)
         try {
             const response = await axios.post('http://localhost:3000/api/students/add', data, {
-                timeout: 5000 // Timeout after 5 seconds so it doesn't stay stuck forever
+                timeout: 5000
             })
             console.log('Server response:', response.data)
             reset()
@@ -22,6 +28,25 @@ const Student_form = () => {
             alert('Failed to save student information. Please try again.')
         }
     }
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [schoolsRes, subjectsRes] = await Promise.all([
+                    axios.get('http://localhost:3000/api/schools/all'),
+                    axios.get('http://localhost:3000/api/subjects/all')
+                ]);
+                setSchools(schoolsRes.data.data);
+                setSubjects(subjectsRes.data.data);
+                console.log('Fetched schools:', schoolsRes.data.data);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        };
+        fetchData();
+    }, []);
+
+
 
     return (
         <section className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
@@ -43,55 +68,40 @@ const Student_form = () => {
 
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700" htmlFor="firstname">
+                            <label className="block text-sm font-medium text-slate-700" htmlFor="first_name">
                                 First name<span className="text-red-500">*</span>
                             </label>
                             <input
-                                id="firstname"
+                                id="first_name"
                                 type="text"
-                                {...register('firstname', { required: 'First name is required' })}
-                                className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.firstname ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
+                                {...register('first_name', { required: 'First name is required' })}
+                                className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.first_name ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
                                 placeholder="First name"
-                                aria-invalid={errors.firstname ? 'true' : 'false'}
+                                aria-invalid={errors.first_name ? 'true' : 'false'}
                             />
-                            {errors.firstname && (
-                                <p className="mt-2 text-sm text-red-600">{errors.firstname.message}</p>
+                            {errors.first_name && (
+                                <p className="mt-2 text-sm text-red-600">{errors.first_name.message}</p>
                             )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700" htmlFor="lastname">
+                            <label className="block text-sm font-medium text-slate-700" htmlFor="last_name">
                                 Last name<span className="text-red-500">*</span>
                             </label>
                             <input
-                                id="lastname"
+                                id="last_name"
                                 type="text"
-                                {...register('lastname', { required: 'Last name is required' })}
-                                className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.lastname ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
+                                {...register('last_name', { required: 'Last name is required' })}
+                                className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.last_name ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
                                 placeholder="Last name"
-                                aria-invalid={errors.lastname ? 'true' : 'false'}
+                                aria-invalid={errors.last_name ? 'true' : 'false'}
                             />
-                            {errors.lastname && (
-                                <p className="mt-2 text-sm text-red-600">{errors.lastname.message}</p>
+                            {errors.last_name && (
+                                <p className="mt-2 text-sm text-red-600">{errors.last_name.message}</p>
                             )}
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700" htmlFor="school">
-                                School<span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                id="school"
-                                type="text"
-                                {...register('school', { required: 'School is required' })}
-                                className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.school ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
-                                placeholder="School name"
-                                aria-invalid={errors.school ? 'true' : 'false'}
-                            />
-                            {errors.school && (
-                                <p className="mt-2 text-sm text-red-600">{errors.school.message}</p>
-                            )}
-                        </div>
+
                     </div>
 
                     <div className="grid gap-6 sm:grid-cols-2">
@@ -111,21 +121,25 @@ const Student_form = () => {
                                 <p className="mt-2 text-sm text-red-600">{errors.class.message}</p>
                             )}
                         </div>
-
+                        
                         <div>
                             <label className="block text-sm font-medium text-slate-700" htmlFor="subject">
-                                Subject<span className="text-red-500">*</span>
+                                Subjects (Hold Ctrl/Cmd to select multiple)<span className="text-red-500">*</span>
                             </label>
-                            <input
+                            <select
                                 id="subject"
-                                type="text"
-                                {...register('subject', { required: 'Subject is required' })}
-                                className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.subject ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
-                                placeholder="Primary subject"
-                                aria-invalid={errors.subject ? 'true' : 'false'}
-                            />
-                            {errors.subject && (
-                                <p className="mt-2 text-sm text-red-600">{errors.subject.message}</p>
+                                {...register('subject_ids', { required: 'At least one subject is required' })}
+                                className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.subject_ids ? 'border-red-300 text-red-900 focus:border-red-500' : 'border-slate-200 bg-white'}`}
+                                multiple
+                            >
+                                {subjects.map((sub) => (
+                                    <option key={sub.subject_id} value={sub.subject_id}>
+                                        {sub.subject_name}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.subject_ids && (
+                                <p className="mt-2 text-sm text-red-600">{errors.subject_ids.message}</p>
                             )}
                         </div>
                     </div>
@@ -143,6 +157,29 @@ const Student_form = () => {
                         />
                         {errors.address && (
                             <p className="mt-2 text-sm text-red-600">{errors.address.message}</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700" htmlFor="school">
+                            School<span className="text-red-500">*</span>
+                        </label>
+                        <select
+                            id="school"
+                            // Change 'school' to 'school_id' to match backend destructuring
+                            {...register('school_id', { required: 'School is required' })}
+                            className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.school_id ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
+                        >
+                            <option value="">Select a school</option>
+                            {schools.map((sch) => (
+                                // CRITICAL: Change value from name to ID
+                                <option key={sch.school_id} value={sch.school_id}>
+                                    {sch.school_name}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.school_id && (
+                            <p className="mt-2 text-sm text-red-600">{errors.school_id.message}</p>
                         )}
                     </div>
 

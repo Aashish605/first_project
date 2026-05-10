@@ -5,7 +5,8 @@ import studentRoutes from './routes/studentRoutes.js'
 import teacherRoutes from './routes/teacherRoutes.js'
 import schoolRoutes from './routes/schoolRoutes.js'
 import subjectRoutes from './routes/subjectRoutes.js'
-
+import sequelize from './Db/Db.js'
+import initModels from './models/init-models.js'
 
 
 
@@ -27,6 +28,20 @@ app.use(cors({
 const port = process.env.PORT || 3000
 
 
+
+initModels(sequelize);
+
+sequelize.authenticate()
+    .then(() => {
+        console.log('Connection to the database has been established successfully.');
+        return sequelize.sync({ alter: true });
+    })
+    .then(() => {
+        console.log("Database & tables synced successfully!");
+    })
+    .catch((err) => {
+        console.error("Unable to connect to the database or sync tables:", err);
+    });
 
 
 

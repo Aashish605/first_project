@@ -1,31 +1,21 @@
 import { DataTypes } from 'sequelize';
 
+
 const StudentModel = (sequelize) => {
-  return sequelize.define('Student', {
+  const Student = sequelize.define('Student', {
     student_id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    first_name: {
-      type: DataTypes.STRING(100),
-      allowNull: false
-    },
-    last_name: {
-      type: DataTypes.STRING(100),
-      allowNull: false
-    },
-    address: {
-      type: DataTypes.STRING(100),
-      allowNull: false
-    },
-    class: {
-      type: DataTypes.STRING(100),
-      allowNull: false
-    },
-    subject: {
-      type: DataTypes.STRING(100),
+    first_name: { type: DataTypes.STRING(100), allowNull: false },
+    last_name: { type: DataTypes.STRING(100), allowNull: false },
+    address: { type: DataTypes.STRING(100), allowNull: false },
+    class: { type: DataTypes.STRING(100), allowNull: false },
+    
+    school_id: {
+      type: DataTypes.INTEGER,
       allowNull: false
     }
   }, {
@@ -39,10 +29,13 @@ const StudentModel = (sequelize) => {
         using: "BTREE",
         fields: [
           { name: "student_id" },
-        ]
+        ] 
       },
     ]
   });
+
+  return Student;
 };
+
 
 export default StudentModel;

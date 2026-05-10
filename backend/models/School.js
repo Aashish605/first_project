@@ -1,24 +1,25 @@
-import { DataTypes } from 'sequelize'; // Use ES module import
+import { DataTypes } from 'sequelize';
 
 const SchoolModel = (sequelize) => {
-  return sequelize.define('School', { // Model name should be lowercase singular
+  return sequelize.define('School', {
     school_id: {
-      type: DataTypes.STRING(50), // Assuming school_id is a string like "SCH-001"
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
       allowNull: false,
-      unique: true, // Ensure school_id is unique
+      primaryKey: true
     },
-    name: { // Changed to 'name' to match frontend req.body
+    school_name: {
       type: DataTypes.STRING(100),
       allowNull: false
     },
-    address: { // Changed to 'address' to match frontend req.body
-      type: DataTypes.STRING(255), // Use a larger string for address
+    school_address: {
+      type: DataTypes.STRING(255),
       allowNull: false
     }
   }, {
     sequelize,
     tableName: 'School',
-    timestamps: false, // It's good practice to have createdAt/updatedAt
+    timestamps: false,
     indexes: [
       {
         name: "PRIMARY",
@@ -26,9 +27,9 @@ const SchoolModel = (sequelize) => {
         using: "BTREE",
         fields: [{ name: "school_id" }],
       },
-
     ]
   });
+  return School;
 };
 
 export default SchoolModel;

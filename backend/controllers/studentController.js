@@ -1,27 +1,32 @@
 import sequelize from '../Db/Db.js';
-import StudentModel from '../models/Student.js';
-import { UniqueConstraintError } from 'sequelize'; // Import UniqueConstraintError
+import initModels from '../models/init-models.js';
+import { UniqueConstraintError } from 'sequelize';
 
-const Student = StudentModel(sequelize);
+const { Student } = initModels(sequelize);
 
 export const addStudent = async (req, res) => {
   console.log(req.body);
-  
-  try { // Added student_id to req.body destructuring
-    const { firstname, lastname, address, class: className, subject, school } = req.body;
+  try {
+    const { first_name, last_name, address, class: className, school_id, subject_ids } = req.body;
 
-    if (!firstname || !lastname || !address || !className || !subject || !school) {
+
+    if (!first_name || !last_name || !address || !className || !subject_ids || !school_id) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
     const student = await Student.create({
-      firstname:firstname,
-      lastname:lastname,
-      address: address,
+      first_name,
+      last_name,
+      address,
       class: className,
-      subject: subject,
-      school: school
+      school_id: parseInt(school_id),
     });
+
+    if (subject_ids && subject_ids.length > 0) {
+      const numericIds = [subject_ids].flat().map(id => parseInt(id, 10));
+
+      await student.setEnrolledSubjects(numericIds);
+    }
 
     res.status(201).json({
       message: 'Student added successfully',
@@ -37,7 +42,21 @@ export const addStudent = async (req, res) => {
 
 export const getStudents = async (req, res) => {
   try {
-    const students = await Student.findAll();
+    const students = await Student.findAll({
+      include: [
+        {
+          model: sequelize.models.Subject,
+          as: 'enrolledSubjects',
+          through: {
+            attributes: [],
+          },
+        },
+        {
+          model: sequelize.models.School,
+          as: 'school',
+        },
+      ],
+    });
     res.status(200).json({
       message: 'Students fetched successfully',
       data: students,
@@ -50,7 +69,22 @@ export const getStudents = async (req, res) => {
 export const getStudent = async (req, res) => {
   try {
     const { id } = req.params;
-    const student = await Student.findByPk(id);
+    const student = await Student.findOne({
+      where: { student_id: parseInt(id) },
+      include: [
+        {
+          model: sequelize.models.Subject,
+          as: 'enrolledSubjects',
+          through: {
+            attributes: [],
+          },
+        },
+        {
+          model: sequelize.models.School,
+          as: 'school',
+        },
+      ],
+    });
 
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
@@ -65,26 +99,30 @@ export const getStudent = async (req, res) => {
 export const updateStudentInfo = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const { first_name, last_name, address, class: className, school_id, subject_ids } = req.body;
 
     if (isNaN(parseInt(id))) {
       return res.status(400).json({ message: 'Invalid student ID provided' });
     }
 
-    const [updated] = await Student.update({
-      student_id: updateData.student_id,
-      firstname: updateData.firstname,
-      lastname: updateData.lastname,
-      address: updateData.address,
-      class: updateData.class,
-      subject: updateData.subject,
-      school: updateData.school
-    }, { // Use 'id' as the primary key
-      where: { id: parseInt(id) }
+    const student = await Student.findOne({ where: { student_id: parseInt(id) } });
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    await Student.update({
+      first_name,
+      last_name,
+      address,
+      class: className,
+      school_id:  parseInt(school_id),
+    }, {
+      where: { student_id: parseInt(id) }
     });
 
-    if (updated === 0) {
-      return res.status(404).json({ message: 'Student not found' });
+    if (subject_ids !== undefined) {
+      const numericIds = [subject_ids].flat().map(subjectId => parseInt(subjectId));
+      await student.setEnrolledSubjects(numericIds);
     }
 
     res.status(200).json({
@@ -101,8 +139,8 @@ export const removeStudent = async (req, res) => {
     if (isNaN(parseInt(id))) {
       return res.status(400).json({ message: 'Invalid student ID provided' });
     }
-    const deleted = await Student.destroy({ where: { id: parseInt(id) } }); // Use 'id' as the primary key
-    
+    const deleted = await Student.destroy({ where: { student_id: parseInt(id) } });
+
     if (deleted === 0) {
       return res.status(404).json({ message: 'Student not found' });
     }

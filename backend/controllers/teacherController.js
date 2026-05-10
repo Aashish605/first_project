@@ -1,21 +1,23 @@
 import sequelize from '../Db/Db.js';
-import TeacherModel from '../models/Teacher.js';
+import initModels from '../models/init-models.js';
 import { UniqueConstraintError } from 'sequelize';
 
-const Teacher = TeacherModel(sequelize);
 
-export const addTeacher = async (req, res) => { // Added async
+const { Teacher } = initModels(sequelize);
+
+export const addTeacher = async (req, res) => {
+  console.log('Received request to add teacher with data:', req.body);
   try {
-    const { teacher_id, subject_name, school_name } = req.body;
+    const { teacher_name, subject_id, school_id } = req.body;
 
-    if (!teacher_id || !subject_name || !school_name) {
+    if (!teacher_name || !subject_id || !school_id) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
     const teacher = await Teacher.create({
-      teacher_id,
-      subject_name,
-      school_name,
+      teacher_name,
+      subject_id: parseInt(subject_id),
+      school_id: parseInt(school_id)
     });
 
     res.status(201).json({
@@ -32,7 +34,19 @@ export const addTeacher = async (req, res) => { // Added async
 
 export const getTeachers = async (req, res) => {
   try {
-    const teachers = await Teacher.findAll();
+    const teachers = await Teacher.findAll({
+      include: [
+        {
+          model: sequelize.models.Subject,
+          as: 'specialty'
+        },
+        {
+          model: sequelize.models.School,
+          as: 'workplace'
+
+        }
+      ]
+    });
     res.status(200).json({
       message: 'Teachers fetched successfully',
       data: teachers,
@@ -45,7 +59,20 @@ export const getTeachers = async (req, res) => {
 export const getTeacher = async (req, res) => {
   try {
     const { id } = req.params;
-    const teacher = await Teacher.findByPk(id);
+    const teacher = await Teacher.findOne( {
+      where: { Teacher_id: parseInt(id) },
+      include: [
+        {
+          model: sequelize.models.Subject,
+          as: 'specialty'
+        },
+        {
+          model: sequelize.models.School,
+          as: 'workplace'
+
+        }
+      ]
+    });
 
     if (!teacher) {
       return res.status(404).json({ message: 'Teacher not found' });
@@ -62,20 +89,24 @@ export const getTeacher = async (req, res) => {
 export const updateTeacherInfo = async (req, res) => {
   try {
     const { id } = req.params;
-    const { teacher_id, subject_name, school_name } = req.body;
+    const { teacher_name, subject_id, school_id } = req.body;
 
     if (isNaN(parseInt(id))) {
       return res.status(400).json({ message: 'Invalid teacher ID provided' });
     }
 
-    const [updatedRows] = await Teacher.update(
-      { teacher_id, subject_name, school_name },
-      { where: { id: parseInt(id) } }
-    );
+    const teacher = await Teacher.findByPk(id);
 
-    if (updatedRows === 0) {
+    if (!teacher) {
       return res.status(404).json({ message: 'Teacher not found' });
     }
+
+
+    await Teacher.update(
+      { teacher_name, subject_id, school_id },
+      { where: { Teacher_id: parseInt(id) } }
+    );
+
     res.status(200).json({
       message: 'Teacher updated successfully',
     });
@@ -91,11 +122,9 @@ export const removeTeacher = async (req, res) => {
       return res.status(400).json({ message: 'Invalid teacher ID provided' });
     }
 
-    const deletedRows = await Teacher.destroy({ where: { id: parseInt(id) } });
+    const teacher = await Teacher.findByPk(id);
+    await teacher.destroy();
 
-    if (deletedRows === 0) {
-      return res.status(404).json({ message: 'Teacher not found' });
-    }
     res.status(200).json({
       message: 'Teacher deleted successfully',
     });
@@ -103,3 +132,8 @@ export const removeTeacher = async (req, res) => {
     res.status(500).json({ message: 'Error deleting teacher', error: error.message });
   }
 };
+
+
+
+
+

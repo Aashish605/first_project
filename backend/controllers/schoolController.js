@@ -2,20 +2,20 @@ import sequelize from '../Db/Db.js';
 import SchoolModel from '../models/School.js';
 import { UniqueConstraintError } from 'sequelize';
 
-const School = SchoolModel(sequelize); // Initialize School model
+const School = SchoolModel(sequelize);
 
-export const addSchool = async (req, res) => { // Added async
+export const addSchool = async (req, res) => {
+  console.log('Received request to add school with data:', req.body); // Debug log
   try {
-    const { school_id, name, address } = req.body;
+    const {school_name, school_address } = req.body;
 
-    if (!school_id || !name || !address) {
+    if (!school_name || !school_address) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
     const school = await School.create({
-      school_id,
-      name,
-      address,
+      school_name,
+      school_address,
     });
 
     res.status(201).json({
@@ -62,22 +62,20 @@ export const getSchool = async (req, res) => {
 export const updateSchoolInfo = async (req, res) => {
   try {
     const { id } = req.params;
-    const { school_id, name, address } = req.body; // Destructure to match model fields
+    const { school_name , school_address} = req.body;
 
     if (isNaN(parseInt(id))) {
       return res.status(400).json({ message: 'Invalid school ID provided' });
     }
 
-    const [updatedRows] = await School.update(
-      { school_id, name, address }, // Data to update
-      { where: { id: parseInt(id) } } // Condition
+    await School.update(
+      { school_name, school_address }, 
+      { where: { school_id: parseInt(id) } } 
     );
 
-    if (updatedRows === 0) {
-      return res.status(404).json({ message: 'School not found' });
-    }
+
     res.status(200).json({
-      message: 'School updated successfully', // Sequelize update returns [affectedRows]
+      message: 'School updated successfully', 
     });
   } catch (error) {
     res.status(500).json({ message: 'Error updating school', error: error.message });
@@ -91,11 +89,10 @@ export const removeSchool = async (req, res) => {
       return res.status(400).json({ message: 'Invalid school ID provided' });
     }
 
-    const deletedRows = await School.destroy({ where: { id: parseInt(id) } });
+    await School.destroy({ where: { school_id: parseInt(id) } });
 
-    if (deletedRows === 0) {
-      return res.status(404).json({ message: 'School not found' });
-    }
+    
+
     res.status(200).json({
       message: 'School deleted successfully',
     });

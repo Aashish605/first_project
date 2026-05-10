@@ -1,4 +1,5 @@
 import { useForm } from 'react-hook-form'
+import axios from 'axios'
 
 const School_form = () => {
   const {
@@ -8,9 +9,18 @@ const School_form = () => {
     reset,
   } = useForm()
 
-  const onSubmit = data => {
-    console.log('School data:', data)
-    reset()
+  const onSubmit = async (data) => {
+    try {
+      console.log('Submitting form with data:', data) // Debug log
+      const response = await axios.post('http://localhost:3000/api/schools/add', data, {
+        timeout: 5000
+      })
+      console.log('Server response:', response.data)
+      reset()
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      alert('Failed to save student information. Please try again.')
+    }
   }
 
   return (
@@ -30,57 +40,46 @@ const School_form = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid gap-6 sm:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-slate-700" htmlFor="school_id">
-                School ID<span className="text-red-500">*</span>
-              </label>
-              <input
-                id="school_id"
-                type="text"
-                {...register('school_id', { required: 'School ID is required' })}
-                className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.school_id ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
-                placeholder="e.g. SCH-001"
-                aria-invalid={errors.school_id ? 'true' : 'false'}
-              />
-              {errors.school_id && (
-                <p className="mt-2 text-sm text-red-600">{errors.school_id.message}</p>
-              )}
-            </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700" htmlFor="name">
+              <label className="block text-sm font-medium text-slate-700" htmlFor="school_name">
                 School Name<span className="text-red-500">*</span>
               </label>
               <input
-                id="name"
+                id="school_name"
                 type="text"
-                {...register('name', { required: 'School name is required' })}
-                className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.name ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
+                {...register('school_name', { required: 'School name is required' })}
+                className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.school_name ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
                 placeholder="e.g. ABC High School"
-                aria-invalid={errors.name ? 'true' : 'false'}
+                aria-invalid={errors.school_name ? 'true' : 'false'}
               />
-              {errors.name && (
-                <p className="mt-2 text-sm text-red-600">{errors.name.message}</p>
+              {errors.school_name && (
+                <p className="mt-2 text-sm text-red-600">{errors.school_name.message}</p>
               )}
             </div>
           </div>
 
+          
+
           <div>
-            <label className="block text-sm font-medium text-slate-700" htmlFor="address">
+            <label className="block text-sm font-medium text-slate-700" htmlFor="school_address">
               Address<span className="text-red-500">*</span>
             </label>
             <textarea
-              id="address"
+              id="school_address"
               rows="4"
-              {...register('address', { required: 'Address is required' })}
-              className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.address ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
+              {...register('school_address', { required: 'Address is required' })}
+              className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.school_address ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
               placeholder="Street, city, and other address details"
-              aria-invalid={errors.address ? 'true' : 'false'}
+              aria-invalid={errors.school_address ? 'true' : 'false'}
             />
-            {errors.address && (
-              <p className="mt-2 text-sm text-red-600">{errors.address.message}</p>
+            {errors.school_address && (
+              <p className="mt-2 text-sm text-red-600">{errors.school_address.message}</p>
             )}
           </div>
+
+
+
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600 shadow-sm ring-1 ring-slate-200">

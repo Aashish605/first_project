@@ -26,6 +26,8 @@ const SubjectModel = (sequelize) => {
       },
     ]
   });
+  return Subject;
+
 };
 
 export default SubjectModel;
