@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form'
+import { useForm, useFieldArray } from 'react-hook-form'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 
@@ -11,18 +11,41 @@ const Student_form = () => {
 
     const {
         register,
+        control,
         handleSubmit,
         formState: { errors, isSubmitting, isSubmitSuccessful },
         reset,
-    } = useForm()
+    } = useForm({ defaultValues: { interests: [{ name: '' }] } })
+
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: 'interests',
+    })
 
     const onSubmit = async (data) => {
+        const interestsObject = Array.isArray(data.interests)
+            ? data.interests.reduce((acc, interest, index) => {
+                const value = interest?.name?.trim()
+                if (!value) return acc
+                const key = index === 0 ? 'name' : `name${index}`
+                acc[key] = value
+                return acc
+            }, {})
+            : {}
+
+        const payload = {
+            ...data,
+            interests: interestsObject,
+        }
+
+        console.log('Submitting student data:', payload)
+
         try {
-            const response = await axios.post('http://localhost:3000/api/students/add', data, {
+            const response = await axios.post('http://localhost:3000/api/students/add', payload, {
                 timeout: 5000
             })
             console.log('Server response:', response.data)
-            reset()
+            reset({ interests: [{ name: '' }] })
         } catch (error) {
             console.error('Error submitting form:', error)
             alert('Failed to save student information. Please try again.')
@@ -121,7 +144,7 @@ const Student_form = () => {
                                 <p className="mt-2 text-sm text-red-600">{errors.class.message}</p>
                             )}
                         </div>
-                        
+
                         <div>
                             <label className="block text-sm font-medium text-slate-700" htmlFor="subject">
                                 Subjects (Hold Ctrl/Cmd to select multiple)<span className="text-red-500">*</span>
@@ -166,13 +189,11 @@ const Student_form = () => {
                         </label>
                         <select
                             id="school"
-                            // Change 'school' to 'school_id' to match backend destructuring
                             {...register('school_id', { required: 'School is required' })}
                             className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.school_id ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
                         >
                             <option value="">Select a school</option>
                             {schools.map((sch) => (
-                                // CRITICAL: Change value from name to ID
                                 <option key={sch.school_id} value={sch.school_id}>
                                     {sch.school_name}
                                 </option>
@@ -180,6 +201,44 @@ const Student_form = () => {
                         </select>
                         {errors.school_id && (
                             <p className="mt-2 text-sm text-red-600">{errors.school_id.message}</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700" htmlFor="interest">
+                            Interests<span className="text-red-500">*</span>
+                        </label>
+                        <div className="space-y-3 mt-2">
+                            {fields.map((field, index) => (
+                                <div key={field.id} className="flex items-center gap-3">
+                                    <input
+                                        type="text"
+                                        {...register(`interests.${index}.name`, { required: 'Interest is required' })}
+                                        className={`w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 ${errors.interests?.[index]?.name ? 'border-red-300 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100' : 'border-slate-200 bg-white'}`}
+                                        placeholder={`Interest ${index + 1}`}
+                                    />
+                                    {fields.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => remove(index)}
+                                            className="inline-flex h-11 items-center justify-center rounded-2xl bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700"
+                                        >
+                                            −
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+
+                            <button
+                                type="button"
+                                onClick={() => append({ name: '' })}
+                                className="inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/10 transition hover:bg-indigo-700"
+                            >
+                                + Add interest
+                            </button>
+                        </div>
+                        {errors.interests && Array.isArray(errors.interests) && errors.interests.some((error) => error?.name) && (
+                            <p className="mt-2 text-sm text-red-600">Please fill in all interest fields or remove empty rows.</p>
                         )}
                     </div>
 

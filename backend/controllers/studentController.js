@@ -7,10 +7,10 @@ const { Student } = initModels(sequelize);
 export const addStudent = async (req, res) => {
   console.log(req.body);
   try {
-    const { first_name, last_name, address, class: className, school_id, subject_ids } = req.body;
+    const { first_name, last_name, address, class: className, school_id, subject_ids,interests } = req.body;
 
 
-    if (!first_name || !last_name || !address || !className || !subject_ids || !school_id) {
+    if (!first_name || !last_name || !address || !className || !subject_ids || !school_id || !interests) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -20,6 +20,7 @@ export const addStudent = async (req, res) => {
       address,
       class: className,
       school_id: parseInt(school_id),
+      interests,
     });
 
     if (subject_ids && subject_ids.length > 0) {
