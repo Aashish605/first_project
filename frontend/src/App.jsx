@@ -1,6 +1,47 @@
-import { Outlet, Link } from 'react-router-dom'
+import { Outlet, Link, useNavigate } from 'react-router-dom'
+import api from './api/client.js'
+import { useEffect, useState } from 'react'
 
 function App() {
+  const navigate = useNavigate()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    let isMounted = true
+
+    const checkAuth = async () => {
+      try {
+        await api.get('/api/users/me', { timeout: 5000 })
+        if (isMounted) setIsLoggedIn(true)
+      } catch {
+        if (isMounted) setIsLoggedIn(false)
+      }
+    }
+
+    checkAuth()
+    const onAuthChange = () => {
+      checkAuth()
+    }
+    window.addEventListener('edu-auth-changed', onAuthChange)
+    return () => {
+      isMounted = false
+      window.removeEventListener('edu-auth-changed', onAuthChange)
+    }
+  }, [])
+
+  
+  const onLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      await api.post('/api/users/logout', {}, { timeout: 5000 })
+      setIsLoggedIn(false)
+      navigate('/')
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
   return (
     <main className="min-h-screen bg-slate-100 text-slate-900">
       <nav className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 py-4 backdrop-blur-md">
@@ -18,6 +59,16 @@ function App() {
             <Link to="/search" className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 transition-all hover:bg-slate-50 hover:text-indigo-600">
               Find by ID
             </Link>
+            {isLoggedIn && (
+              <button
+                type="button"
+                onClick={onLogout}
+                disabled={isLoggingOut}
+                className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 transition-all hover:bg-slate-50 hover:text-red-600 disabled:opacity-70"
+              >
+                {isLoggingOut ? 'Logging out...' : 'Logout'}
+              </button>
+            )}
           </div>
         </div>
       </nav>

@@ -3,13 +3,14 @@ import _School from "./School.js";
 import _Student from "./Student.js";
 import _Subject from "./Subject.js";
 import _Teacher from "./Teacher.js";
+import _User from "./User.js";
 
 export default function initModels(sequelize) {
   const School = _School(sequelize, DataTypes);
   const Student = _Student(sequelize, DataTypes);
   const Subject = _Subject(sequelize, DataTypes);
   const Teacher = _Teacher(sequelize, DataTypes);
-
+  const User = _User(sequelize, DataTypes);
   // student & school 
   Student.belongsTo(School, { foreignKey: "school_id" , as: "school" });
   School.hasMany(Student, { foreignKey: "school_id" , as: "students" });
@@ -31,5 +32,6 @@ export default function initModels(sequelize) {
     Student,
     Subject,
     Teacher,
+    User,
   };
 }

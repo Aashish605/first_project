@@ -15,7 +15,9 @@ const All = () => {
             setLoading(true)
             setError('')
             try {
-                const res = await axios.get(`${API_BASE}/api/${formType}/all`)
+                const res = await axios.get(`${API_BASE}/api/${formType}/all`,{
+                    withCredentials: true,
+                })
                 setData(res.data.data || [])
             } catch (error) {
                 setData([])

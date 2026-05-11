@@ -1,12 +1,16 @@
 import express from 'express'
 import dotenv from 'dotenv'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
+import jwt from 'jsonwebtoken'
 import studentRoutes from './routes/studentRoutes.js'
 import teacherRoutes from './routes/teacherRoutes.js'
 import schoolRoutes from './routes/schoolRoutes.js'
 import subjectRoutes from './routes/subjectRoutes.js'
+import userRoutes from './routes/userRoute.js'
 import sequelize from './Db/Db.js'
 import initModels from './models/init-models.js'
+import { verifyToken } from './middlewares/verifyToken.js'
 
 
 
@@ -14,6 +18,7 @@ dotenv.config()
 
 const app = express()
 app.use(express.json())
+app.use(cookieParser())
 
 
 app.use(cors({
@@ -53,8 +58,9 @@ app.get('/', (req, res) => {
 // Routes
 app.use('/api/students', studentRoutes)
 app.use('/api/teachers', teacherRoutes)
-app.use('/api/schools', schoolRoutes)
+app.use('/api/schools',verifyToken, schoolRoutes)
 app.use('/api/subjects', subjectRoutes)
+app.use('/api/users', userRoutes)
 
 // 404 handler
 app.use((req, res) => {

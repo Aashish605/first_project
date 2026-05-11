@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form'
-import axios from 'axios'
+import api from '../../api/client.js'
 
 const School_form = () => {
   const {
@@ -11,9 +11,9 @@ const School_form = () => {
 
   const onSubmit = async (data) => {
     try {
-      console.log('Submitting form with data:', data) // Debug log
-      const response = await axios.post('http://localhost:3000/api/schools/add', data, {
-        timeout: 5000
+      console.log('Submitting form with data:', data) 
+      const response = await api.post('/api/schools/add', data, {
+        timeout: 5000,
       })
       console.log('Server response:', response.data)
       reset()
