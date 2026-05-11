@@ -2,7 +2,7 @@ import { DataTypes } from 'sequelize';
 ;
 
 const UserModel = (sequelize) => {
-    const User = sequelize.define('User',{
+    const User = sequelize.define('User', {
         user_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -13,20 +13,24 @@ const UserModel = (sequelize) => {
             type: DataTypes.STRING(100),
             allowNull: false
         },
-        user_email:{
+        user_email: {
             type: DataTypes.STRING(100),
             allowNull: false,
             unique: true
         },
-        user_password:{
+        user_password: {
             type: DataTypes.STRING(100),
             allowNull: false
         },
-        refresh_token:{
+        refresh_token: {
             type: DataTypes.STRING(255),
             allowNull: true
+        },
+        refresh_token_expires_at: {
+            type: DataTypes.DATE,
+            allowNull: true
         }
-    },{
+    }, {
         sequelize,
         tableName: 'user',
         timestamps: false,

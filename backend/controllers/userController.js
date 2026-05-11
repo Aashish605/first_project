@@ -1,9 +1,10 @@
 import sequelize from '../Db/Db.js';
 import initModels from '../models/init-models.js';
-import { UniqueConstraintError } from 'sequelize';
+import {Op, UniqueConstraintError } from 'sequelize';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ export const addUser = async (req, res) => {
 
         const accessToken = jwt.sign({ user_email }, process.env.JWT_SECRET, { expiresIn: '5m' });
         const refreshToken = jwt.sign({ user_email }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const refreshTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
 
         const user = await User.create({
@@ -27,6 +29,7 @@ export const addUser = async (req, res) => {
             user_email,
             user_password,
             refresh_token: refreshToken,
+            refresh_token_expires_at: refreshTokenExpiry
         })
         res.cookie('accessToken', accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 300000, sameSite: 'strict' });
         res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 604800000, sameSite: 'strict' });
@@ -64,8 +67,9 @@ export const loginUser = async (req, res) => {
         res.cookie('accessToken', accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 3600000, sameSite: 'strict' })
         res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 604800000, sameSite: 'strict' })
 
+        const refreshTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
-        await User.update({ refresh_token: refreshToken }, { where: { user_email: user.user_email } })
+        await User.update({ refresh_token: refreshToken , refresh_token_expires_at: refreshTokenExpiry                                           }, { where: { user_email: user.user_email } })
 
 
         return res.status(200).json({
@@ -187,7 +191,7 @@ export const refreshToken = async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized' })
         }
 
-        const user = await User.findOne({ where: { refresh_token: token } })
+        const user = await User.findOne({ where: { refresh_token: token ,refresh_token_expires_at: { [Op.gt]: new Date() } } })
         if (!user) {
             return res.status(401).json({ message: 'Unauthorized' })
         }
